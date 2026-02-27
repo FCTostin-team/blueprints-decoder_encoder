@@ -9,6 +9,22 @@ let currentLanguage = 'ru';
 
 const dom = {};
 
+const LANGUAGE_LABELS = {
+    ru: 'Русский',
+    en: 'English',
+    uk: 'Українська',
+    kk: 'Қазақша',
+    cs: 'Čeština',
+    nl: 'Nederlands',
+    sv: 'Svenska',
+    de: 'Deutsch',
+    pl: 'Polski',
+    fr: 'Français',
+    zh: '中文',
+    ja: '日本語'
+};
+
+
 function t(key) {
     const dictionary = (window.BP_TRANSLATIONS && window.BP_TRANSLATIONS[currentLanguage]) || {};
     const fallback = (window.BP_TRANSLATIONS && window.BP_TRANSLATIONS.ru) || {};
@@ -35,8 +51,8 @@ function setLanguage(language) {
         node.innerHTML = t(node.dataset.i18nHtml);
     });
 
-    if (dom.languageSelect) {
-        dom.languageSelect.value = language;
+    if (dom.languageToggle) {
+        dom.languageToggle.textContent = LANGUAGE_LABELS[language] || language.toUpperCase();
     }
 
     updateHistoryDisplay();
@@ -317,8 +333,13 @@ function bindEvents() {
         dom.languageMenu.classList.toggle('hidden');
     });
 
-    dom.languageSelect.addEventListener('change', (event) => {
-        setLanguage(event.target.value);
+    dom.languageOptions.addEventListener('click', (event) => {
+        const option = event.target.closest('button[data-language]');
+        if (!option) {
+            return;
+        }
+
+        setLanguage(option.dataset.language);
         dom.languageMenu.classList.add('hidden');
     });
 
@@ -349,7 +370,20 @@ function cacheDom() {
     dom.clearHistoryBtn = document.getElementById('clearHistoryBtn');
     dom.languageToggle = document.getElementById('languageToggle');
     dom.languageMenu = document.getElementById('languageMenu');
-    dom.languageSelect = document.getElementById('languageSelect');
+    dom.languageOptions = document.getElementById('languageOptions');
+}
+
+function renderLanguageOptions() {
+    dom.languageOptions.innerHTML = '';
+
+    Object.entries(LANGUAGE_LABELS).forEach(([code, label]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'language-option';
+        button.dataset.language = code;
+        button.textContent = label;
+        dom.languageOptions.appendChild(button);
+    });
 }
 
 function initEditor() {
@@ -374,6 +408,7 @@ function initEditor() {
 
 window.addEventListener('load', () => {
     cacheDom();
+    renderLanguageOptions();
     initEditor();
     bindEvents();
     loadHistory();
