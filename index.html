@@ -10,14 +10,35 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="language-widget">
+    <button id="languageToggle" class="language-toggle" type="button">🌐</button>
+    <div id="languageMenu" class="language-menu hidden">
+      <label for="languageSelect" data-i18n="languageLabel">Язык</label>
+      <select id="languageSelect">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+        <option value="uk">Українська</option>
+        <option value="kk">Қазақша</option>
+        <option value="cs">Čeština</option>
+        <option value="nl">Nederlands</option>
+        <option value="sv">Svenska</option>
+        <option value="de">Deutsch</option>
+        <option value="pl">Polski</option>
+        <option value="fr">Français</option>
+        <option value="zh">中文</option>
+        <option value="ja">日本語</option>
+      </select>
+    </div>
+  </div>
+
   <div class="container">
     <div class="header">
       <div class="header-logo">
-       <img src="https://i.ibb.co/Hp44999c/blueprint-book.png" style="width: 30px; height: 30px;" />
+       <img src="https://i.ibb.co/Hp44999c/blueprint-book.png" class="header-icon" alt="logo" />
         <h1>FACTORIO BLUEPRINT DECODER</h1>
       </div>
       <div>
-        <a href="https://github.com/FCTostin-team" target="_blank" class="version-button">
+        <a href="https://github.com/FCTostin-team" target="_blank" class="version-button" rel="noreferrer">
           <span class="factorio-tooltip">
             V3.8
             <span class="tooltip-text">FCT-team edition</span>
@@ -25,74 +46,74 @@
         </a>
       </div>
     </div>
-    
+
     <div class="blueprint-panel">
       <div class="panel-header">
-        <h3 class="panel-title">История</h3>
+        <h3 class="panel-title" data-i18n="historyTitle">История</h3>
       </div>
       <div class="history-container">
         <div id="historyItems" class="history-items"></div>
-        <button onclick="clearHistory()" class="button-danger">Очистить</button>
+        <button id="clearHistoryBtn" class="button-danger" data-i18n="clear">Очистить</button>
       </div>
     </div>
-    
+
     <div class="blueprint-panel">
       <div class="panel-header">
-        <h3 class="panel-title">Строка чертежа</h3>
+        <h3 class="panel-title" data-i18n="blueprintStringTitle">Строка чертежа</h3>
       </div>
-      <textarea id="blueprintInput" placeholder="Вставьте строку чертежа...">0eJyrVkrKKU0tKMrMK4lPys/PVrKqRogUK1lFx+ooZZak5ipZIYR1wQp1lHISk1JzgBIXFl3YerHxYtOFfRc2XdhwsV/hwq4Ley/su[...]
+      <textarea id="blueprintInput" data-i18n-placeholder="blueprintPlaceholder" placeholder="Вставьте строку чертежа...">0eJyrVkrKKU0tKMrMK4lPys/PVrKqRogUK1lFx+ooZZak5ipZIYR1wQp1lHISk1JzgBIXFl3YerHxYtOFfRc2XdhwsV/hwq4Ley/su[...]</textarea>
       <div class="button-group">
-        <button onclick="decodeBlueprint()" class="button-primary">Decode</button>
-        <button onclick="clearBlueprint()" class="button-danger">Удалить</button>
+        <button id="decodeBtn" class="button-primary" data-i18n="decode">Decode</button>
+        <button id="clearBlueprintBtn" class="button-danger" data-i18n="delete">Удалить</button>
       </div>
     </div>
-    
+
     <div class="blueprint-panel">
       <div class="panel-header">
-        <h3 class="panel-title">JSON редактор</h3>
+        <h3 class="panel-title" data-i18n="jsonEditorTitle">JSON редактор</h3>
       </div>
       <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Поиск в JSON...">
-        <button onclick="searchInJson()">Найти</button>
-        <button onclick="findNext()">Следующий</button>
-        <button onclick="findPrev()">Предыдущий</button>
-        <button onclick="toggleReplaceUI()">Заменить</button>
+        <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Поиск в JSON...">
+        <button id="searchBtn" data-i18n="find">Найти</button>
+        <button id="findNextBtn" data-i18n="next">Следующий</button>
+        <button id="findPrevBtn" data-i18n="prev">Предыдущий</button>
+        <button id="toggleReplaceBtn" data-i18n="replace">Заменить</button>
       </div>
 
       <div id="replaceContainer" class="replace-container">
           <div class="replace-fields">
-              <input type="text" id="replaceInput" placeholder="Текст для замены...">
-              <input type="text" id="replaceWithInput" placeholder="Заменить на...">
+              <input type="text" id="replaceInput" data-i18n-placeholder="replaceFromPlaceholder" placeholder="Текст для замены...">
+              <input type="text" id="replaceWithInput" data-i18n-placeholder="replaceToPlaceholder" placeholder="Заменить на...">
           </div>
-          <button onclick="replaceAll()" class="button-primary">Заменить все</button>
+          <button id="replaceAllBtn" class="button-primary" data-i18n="replaceAll">Заменить все</button>
       </div>
-      
+
       <div id="jsonEditorContainer" class="json-editor-container"></div>
 
-      <button onclick="encodeJson()" class="button-primary">Encode</button>
+      <button id="encodeBtn" class="button-primary" data-i18n="encode">Encode</button>
     </div>
-    
+
     <div class="blueprint-panel">
       <div class="panel-header">
         <h3 class="panel-title">Encoded Blueprint</h3>
       </div>
       <textarea id="encodedOutput" readonly></textarea>
       <div class="button-group">
-        <button onclick="copyEncodedBlueprint()">Скопировать</button>
+        <button id="copyEncodedBtn" data-i18n="copy">Скопировать</button>
       </div>
     </div>
-    
+
     <div class="footer">
       <div class="footer-links">
-        <p><a href="https://www.youtube.com/@FCT-Ostin" target="_blank">YouTube</a></p>
-        <p><a href="https://t.me/FCTostin" target="_blank">Telegram</a></p>
-        <p><a href="https://steamcommunity.com/groups/FCTgroup" target="_blank">Steam Group</a></p>
-        <p><a href="https://www.patreon.com/c/OstinFCT" target="_blank">Patreon</a></p>
-        <p><a href="https://boosty.to/ostinfct" target="_blank">Boosty</a></p>
+        <p><a href="https://www.youtube.com/@FCT-Ostin" target="_blank" rel="noreferrer">YouTube</a></p>
+        <p><a href="https://t.me/FCTostin" target="_blank" rel="noreferrer">Telegram</a></p>
+        <p><a href="https://steamcommunity.com/groups/FCTgroup" target="_blank" rel="noreferrer">Steam Group</a></p>
+        <p><a href="https://www.patreon.com/c/OstinFCT" target="_blank" rel="noreferrer">Patreon</a></p>
+        <p><a href="https://boosty.to/ostinfct" target="_blank" rel="noreferrer">Boosty</a></p>
       </div>
       <div class="footer-links">
-        <p>Руководство Steam: <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3478429132" target="_blank">Декодер/Енкодер чертежа</a></p>
-        <p>Создано при поддержке Телеграм сообщества FCTostin</p>
+        <p data-i18n-html="steamGuideHtml">Руководство Steam: <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3478429132" target="_blank" rel="noreferrer">Декодер/Енкодер чертежа</a></p>
+        <p data-i18n="supportText">Создано при поддержке Телеграм сообщества FCTostin</p>
       </div>
     </div>
   </div>
@@ -105,6 +126,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/matchesonscrollbar.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/match-highlighter.min.js"></script>
+<script src="profiles/ru.js"></script>
+<script src="profiles/en.js"></script>
+<script src="profiles/uk.js"></script>
+<script src="profiles/kk.js"></script>
+<script src="profiles/cs.js"></script>
+<script src="profiles/nl.js"></script>
+<script src="profiles/sv.js"></script>
+<script src="profiles/de.js"></script>
+<script src="profiles/pl.js"></script>
+<script src="profiles/fr.js"></script>
+<script src="profiles/zh.js"></script>
+<script src="profiles/ja.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

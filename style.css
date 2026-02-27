@@ -344,7 +344,7 @@ button:active {
     border: 1px solid var(--factorio-primary);
     padding: 5px;
     border-radius: 2px;
-    position: left;
+    position: absolute;
     z-index: 1;
     bottom: 125%;
     left: 100%;
@@ -388,4 +388,47 @@ button:active {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--factorio-primary);
+}
+
+
+.header-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.language-widget {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.language-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+}
+
+.language-menu {
+    background-color: var(--factorio-dark-alt);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 10px;
+    width: 220px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.language-menu label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: var(--factorio-primary);
+}
+
+.hidden {
+    display: none;
 }
