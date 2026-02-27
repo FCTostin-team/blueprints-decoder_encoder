@@ -408,9 +408,9 @@ button:active {
 }
 
 .language-toggle {
-    min-width: 44px;
     min-height: 44px;
-    padding: 8px;
+    min-width: 150px;
+    padding: 8px 12px;
 }
 
 .language-menu {
@@ -422,11 +422,16 @@ button:active {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
-.language-menu label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 11px;
-    color: var(--factorio-primary);
+.language-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.language-option {
+    width: 100%;
+    text-align: left;
+    text-transform: none;
 }
 
 .hidden {
