@@ -1,78 +1,122 @@
 const MAX_HISTORY_ITEMS = 30;
+const LANGUAGE_STORAGE_KEY = 'blueprintLanguage';
+const HISTORY_STORAGE_KEY = 'blueprintHistory';
+
 let blueprintHistory = [];
 let jsonEditor;
 let searchCursor;
+let currentLanguage = 'ru';
+
+const dom = {};
+
+function t(key) {
+    const dictionary = (window.BP_TRANSLATIONS && window.BP_TRANSLATIONS[currentLanguage]) || {};
+    const fallback = (window.BP_TRANSLATIONS && window.BP_TRANSLATIONS.ru) || {};
+    return dictionary[key] || fallback[key] || key;
+}
+
+function setLanguage(language) {
+    if (!window.BP_TRANSLATIONS || !window.BP_TRANSLATIONS[language]) {
+        return;
+    }
+
+    currentLanguage = language;
+    document.documentElement.lang = language;
+
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+        node.textContent = t(node.dataset.i18n);
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+        node.placeholder = t(node.dataset.i18nPlaceholder);
+    });
+
+    document.querySelectorAll('[data-i18n-html]').forEach((node) => {
+        node.innerHTML = t(node.dataset.i18nHtml);
+    });
+
+    if (dom.languageSelect) {
+        dom.languageSelect.value = language;
+    }
+
+    updateHistoryDisplay();
+
+    try {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    } catch (error) {
+        console.log('LocalStorage not available:', error);
+    }
+}
 
 function addToHistory(blueprint) {
-    if (!blueprint || blueprintHistory.includes(blueprint)) return;
+    if (!blueprint || blueprintHistory.includes(blueprint)) {
+        return;
+    }
 
     blueprintHistory.unshift(blueprint);
     if (blueprintHistory.length > MAX_HISTORY_ITEMS) {
         blueprintHistory.pop();
     }
+
     updateHistoryDisplay();
 
     try {
-        localStorage.setItem('blueprintHistory', JSON.stringify(blueprintHistory));
-    } catch (e) {
-        console.log("LocalStorage not available:", e);
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(blueprintHistory));
+    } catch (error) {
+        console.log('LocalStorage not available:', error);
     }
 }
 
 function updateHistoryDisplay() {
-    const container = document.getElementById('historyItems');
-    container.innerHTML = '';
+    dom.historyItems.innerHTML = '';
 
     blueprintHistory.forEach((blueprint, index) => {
-        const shortCode = blueprint.substring(0, 10) + '...';
         const item = document.createElement('div');
         item.className = 'history-item';
-        item.textContent = shortCode;
-        item.title = `Restore blueprint #${index + 1}`;
-        item.onclick = () => restoreFromHistory(blueprint);
-        container.appendChild(item);
+        item.textContent = `${blueprint.slice(0, 10)}...`;
+        item.title = `${t('historyRestoreTitle')} #${index + 1}`;
+        item.addEventListener('click', () => restoreFromHistory(blueprint));
+        dom.historyItems.appendChild(item);
     });
 
     if (blueprintHistory.length === 0) {
         const empty = document.createElement('span');
-        empty.textContent = 'Пусто';
+        empty.textContent = t('historyEmpty');
         empty.style.color = '#888';
-        container.appendChild(empty);
+        dom.historyItems.appendChild(empty);
     }
 }
 
 function clearHistory() {
     blueprintHistory = [];
     try {
-        localStorage.removeItem('blueprintHistory');
-    } catch (e) {
-        console.log("LocalStorage not available:", e);
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+    } catch (error) {
+        console.log('LocalStorage not available:', error);
     }
     updateHistoryDisplay();
 }
 
 function restoreFromHistory(blueprint) {
-    document.getElementById('blueprintInput').value = blueprint;
-    adjustFontSize('blueprintInput');
+    dom.blueprintInput.value = blueprint;
+    adjustFontSize(dom.blueprintInput);
     decodeBlueprint();
 }
 
 function loadHistory() {
     try {
-        const saved = localStorage.getItem('blueprintHistory');
+        const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
         if (saved) {
             blueprintHistory = JSON.parse(saved);
-            updateHistoryDisplay();
         }
-    } catch (e) {
-        console.log("LocalStorage not available:", e);
+    } catch (error) {
+        console.log('LocalStorage not available:', error);
     }
+    updateHistoryDisplay();
 }
 
-function adjustFontSize(elementId) {
-    const element = document.getElementById(elementId);
+function adjustFontSize(element) {
     const contentLength = element.value.length;
-
     let fontSize = 14;
 
     if (contentLength > 5000) fontSize = 10;
@@ -84,222 +128,240 @@ function adjustFontSize(elementId) {
 }
 
 function clearSearchHighlights() {
-    jsonEditor.getAllMarks().forEach(mark => mark.clear());
+    jsonEditor.getAllMarks().forEach((mark) => mark.clear());
 }
 
 function searchInJson() {
     clearSearchHighlights();
-    const searchTerm = document.getElementById('searchInput').value.trim();
+    const searchTerm = dom.searchInput.value.trim();
+
     if (!searchTerm) {
         searchCursor = null;
         return;
-    };
+    }
 
-    searchCursor = jsonEditor.getSearchCursor(searchTerm, {
-        line: 0,
-        ch: 0
-    }, {
-        caseFold: true
-    });
+    searchCursor = jsonEditor.getSearchCursor(searchTerm, { line: 0, ch: 0 }, { caseFold: true });
     findNext();
 }
 
+function selectCursorResult() {
+    jsonEditor.setSelection(searchCursor.from(), searchCursor.to());
+    jsonEditor.scrollIntoView({ from: searchCursor.from(), to: searchCursor.to() }, 50);
+}
+
 function findNext() {
-    if (!searchCursor) return;
+    if (!searchCursor) {
+        return;
+    }
+
     if (searchCursor.findNext()) {
-        jsonEditor.setSelection(searchCursor.from(), searchCursor.to());
-        jsonEditor.scrollIntoView({
-            from: searchCursor.from(),
-            to: searchCursor.to()
-        }, 50);
+        selectCursorResult();
+        return;
+    }
+
+    searchCursor = jsonEditor.getSearchCursor(searchCursor.query, { line: 0, ch: 0 }, { caseFold: true });
+    if (searchCursor.findNext()) {
+        selectCursorResult();
     } else {
-        searchCursor = jsonEditor.getSearchCursor(searchCursor.query, {
-            line: 0,
-            ch: 0
-        }, {
-            caseFold: true
-        });
-        if (searchCursor.findNext()) {
-            jsonEditor.setSelection(searchCursor.from(), searchCursor.to());
-            jsonEditor.scrollIntoView({
-                from: searchCursor.from(),
-                to: searchCursor.to()
-            }, 50);
-        } else {
-            alert('Совпадений не найдено!');
-        }
+        alert(t('matchesNotFound'));
     }
 }
 
 function findPrev() {
-    if (!searchCursor) return;
+    if (!searchCursor) {
+        return;
+    }
+
     if (searchCursor.findPrevious()) {
-        jsonEditor.setSelection(searchCursor.from(), searchCursor.to());
-        jsonEditor.scrollIntoView({
-            from: searchCursor.from(),
-            to: searchCursor.to()
-        }, 50);
+        selectCursorResult();
+        return;
+    }
+
+    const lastLine = jsonEditor.lastLine();
+    const lastCh = jsonEditor.getLine(lastLine).length;
+    searchCursor = jsonEditor.getSearchCursor(searchCursor.query, { line: lastLine, ch: lastCh }, { caseFold: true });
+
+    if (searchCursor.findPrevious()) {
+        selectCursorResult();
     } else {
-        const lastLine = jsonEditor.lastLine();
-        const lastCh = jsonEditor.getLine(lastLine).length;
-        searchCursor = jsonEditor.getSearchCursor(searchCursor.query, {
-            line: lastLine,
-            ch: lastCh
-        }, {
-            caseFold: true
-        });
-        if (searchCursor.findPrevious()) {
-            jsonEditor.setSelection(searchCursor.from(), searchCursor.to());
-            jsonEditor.scrollIntoView({
-                from: searchCursor.from(),
-                to: searchCursor.to()
-            }, 50);
-        } else {
-            alert('Совпадений не найдено!');
-        }
+        alert(t('matchesNotFound'));
     }
 }
 
 function toggleReplaceUI() {
-    const container = document.getElementById('replaceContainer');
-    if (container.style.display === 'block') {
-        container.style.display = 'none';
-    } else {
-        container.style.display = 'block';
-    }
+    dom.replaceContainer.style.display = dom.replaceContainer.style.display === 'block' ? 'none' : 'block';
 }
 
 function replaceAll() {
-    const findText = document.getElementById('replaceInput').value;
-    const replaceWithText = document.getElementById('replaceWithInput').value;
+    const findText = dom.replaceInput.value;
+    const replaceWithText = dom.replaceWithInput.value;
 
     if (!findText) {
-        alert('Пожалуйста, введите текст, который нужно заменить.');
+        alert(t('replaceEnterText'));
         return;
     }
 
+    const escapedFindText = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const currentCode = jsonEditor.getValue();
-    const newCode = currentCode.replace(new RegExp(findText, 'g'), replaceWithText);
+    const newCode = currentCode.replace(new RegExp(escapedFindText, 'g'), replaceWithText);
 
     if (currentCode === newCode) {
-        alert('Текст для замены не найден.');
+        alert(t('replaceNotFound'));
     } else {
         jsonEditor.setValue(newCode);
-        alert('Замена завершена!');
+        alert(t('replaceDone'));
     }
 }
 
 function base64ToUint8Array(base64) {
     const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
+    const bytes = new Uint8Array(binaryString.length);
+
+    for (let i = 0; i < binaryString.length; i += 1) {
         bytes[i] = binaryString.charCodeAt(i);
     }
+
     return bytes;
 }
 
 function decodeBlueprint() {
     try {
-        const blueprintInput = document.getElementById('blueprintInput');
-        const blueprint = blueprintInput.value.trim();
+        const blueprint = dom.blueprintInput.value.trim();
 
         if (!blueprint) {
-            alert('Пожалуйста, введите строку чертежа');
+            alert(t('enterBlueprint'));
             return;
         }
 
         addToHistory(blueprint);
 
         const base64 = blueprint.startsWith('0') ? blueprint.slice(1) : blueprint;
+        const byteArray = base64ToUint8Array(base64);
+        const jsonString = pako.inflate(byteArray, { to: 'string' });
+        const json = JSON.parse(jsonString);
 
-        try {
-            const byteArray = base64ToUint8Array(base64);
-            const jsonString = pako.inflate(byteArray, {
-                to: 'string'
-            });
-            const json = JSON.parse(jsonString);
-
-            const formattedJson = JSON.stringify(json, null, 2);
-
-            jsonEditor.setValue(formattedJson);
-            adjustFontSize('blueprintInput');
-            encodeBlueprintPreview(json);
-
-        } catch (e) {
-            throw new Error('Не удалось расшифровать чертеж: ' + e.message);
-        }
-    } catch (e) {
-        console.error('Blueprint decoding error:', e);
-        alert('Случилась ошибка: ' + e.message);
+        jsonEditor.setValue(JSON.stringify(json, null, 2));
+        adjustFontSize(dom.blueprintInput);
+        encodeBlueprintPreview(json);
+    } catch (error) {
+        console.error('Blueprint decoding error:', error);
+        alert(`${t('decodeFailed')} ${error.message}`);
     }
 }
 
 function encodeBlueprintPreview(json) {
     try {
-        const jsonString = JSON.stringify(json);
-        const compressed = pako.deflate(jsonString);
+        const compressed = pako.deflate(JSON.stringify(json));
         const base64 = btoa(String.fromCharCode.apply(null, compressed));
-        const encodedOutput = document.getElementById('encodedOutput');
-        encodedOutput.value = '0' + base64;
-        adjustFontSize('encodedOutput');
-    } catch (e) {
-        document.getElementById('encodedOutput').value = 'Encoding error: ' + e.message;
+        dom.encodedOutput.value = `0${base64}`;
+        adjustFontSize(dom.encodedOutput);
+    } catch (error) {
+        dom.encodedOutput.value = `${t('encodingError')} ${error.message}`;
     }
 }
 
 function encodeJson() {
     try {
         const jsonText = jsonEditor.getValue();
-
         if (!jsonText.trim()) {
-            alert('JSON редактор пуст!');
+            alert(t('jsonEditorEmpty'));
             return;
         }
 
         const json = JSON.parse(jsonText);
         encodeBlueprintPreview(json);
-
-        const formattedJson = JSON.stringify(json, null, 2);
-        jsonEditor.setValue(formattedJson);
-
-    } catch (e) {
-        alert('Ошибка кодирования: Неверный формат JSON. ' + e.message);
+        jsonEditor.setValue(JSON.stringify(json, null, 2));
+    } catch (error) {
+        alert(`${t('encodeError')} ${error.message}`);
     }
 }
 
 function copyEncodedBlueprint() {
-    const encodedField = document.getElementById('encodedOutput');
-    if (!encodedField.value) return;
+    if (!dom.encodedOutput.value) {
+        return;
+    }
 
-    encodedField.select();
-    navigator.clipboard.writeText(encodedField.value).then(() => {
-        const copyButton = event.target;
-        const originalText = copyButton.textContent;
-        copyButton.textContent = 'Скопировано!';
+    navigator.clipboard.writeText(dom.encodedOutput.value).then(() => {
+        const originalText = dom.copyEncodedBtn.textContent;
+        dom.copyEncodedBtn.textContent = t('copied');
         setTimeout(() => {
-            copyButton.textContent = originalText;
+            dom.copyEncodedBtn.textContent = originalText;
         }, 1500);
     });
 }
 
 function clearBlueprint() {
-    document.getElementById('blueprintInput').value = '';
+    dom.blueprintInput.value = '';
 }
 
-window.onload = function() {
+function bindEvents() {
+    dom.decodeBtn.addEventListener('click', decodeBlueprint);
+    dom.clearBlueprintBtn.addEventListener('click', clearBlueprint);
+    dom.encodeBtn.addEventListener('click', encodeJson);
+    dom.copyEncodedBtn.addEventListener('click', copyEncodedBlueprint);
+    dom.searchBtn.addEventListener('click', searchInJson);
+    dom.findNextBtn.addEventListener('click', findNext);
+    dom.findPrevBtn.addEventListener('click', findPrev);
+    dom.toggleReplaceBtn.addEventListener('click', toggleReplaceUI);
+    dom.replaceAllBtn.addEventListener('click', replaceAll);
+    dom.clearHistoryBtn.addEventListener('click', clearHistory);
+
+    dom.blueprintInput.addEventListener('input', () => adjustFontSize(dom.blueprintInput));
+    dom.searchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            searchInJson();
+        }
+    });
+
+    dom.languageToggle.addEventListener('click', () => {
+        dom.languageMenu.classList.toggle('hidden');
+    });
+
+    dom.languageSelect.addEventListener('change', (event) => {
+        setLanguage(event.target.value);
+        dom.languageMenu.classList.add('hidden');
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!dom.languageMenu.contains(event.target) && !dom.languageToggle.contains(event.target)) {
+            dom.languageMenu.classList.add('hidden');
+        }
+    });
+}
+
+function cacheDom() {
+    dom.historyItems = document.getElementById('historyItems');
+    dom.blueprintInput = document.getElementById('blueprintInput');
+    dom.encodedOutput = document.getElementById('encodedOutput');
+    dom.searchInput = document.getElementById('searchInput');
+    dom.replaceContainer = document.getElementById('replaceContainer');
+    dom.replaceInput = document.getElementById('replaceInput');
+    dom.replaceWithInput = document.getElementById('replaceWithInput');
+    dom.decodeBtn = document.getElementById('decodeBtn');
+    dom.clearBlueprintBtn = document.getElementById('clearBlueprintBtn');
+    dom.encodeBtn = document.getElementById('encodeBtn');
+    dom.copyEncodedBtn = document.getElementById('copyEncodedBtn');
+    dom.searchBtn = document.getElementById('searchBtn');
+    dom.findNextBtn = document.getElementById('findNextBtn');
+    dom.findPrevBtn = document.getElementById('findPrevBtn');
+    dom.toggleReplaceBtn = document.getElementById('toggleReplaceBtn');
+    dom.replaceAllBtn = document.getElementById('replaceAllBtn');
+    dom.clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    dom.languageToggle = document.getElementById('languageToggle');
+    dom.languageMenu = document.getElementById('languageMenu');
+    dom.languageSelect = document.getElementById('languageSelect');
+}
+
+function initEditor() {
     jsonEditor = CodeMirror(document.getElementById('jsonEditorContainer'), {
-        mode: {
-            name: "javascript",
-            json: true
-        },
-        theme: "material-darker",
+        mode: { name: 'javascript', json: true },
+        theme: 'material-darker',
         lineNumbers: true,
         lineWrapping: true,
         autoCloseBrackets: true,
         matchBrackets: true,
         styleActiveLine: true,
-        gutters: ["CodeMirror-linenumbers"],
+        gutters: ['CodeMirror-linenumbers'],
         highlightSelectionMatches: {
             showToken: /\w/,
             annotateScrollbar: true
@@ -308,19 +370,17 @@ window.onload = function() {
 
     jsonEditor.setSize(null, 'auto');
     jsonEditor.refresh();
+}
 
+window.addEventListener('load', () => {
+    cacheDom();
+    initEditor();
+    bindEvents();
     loadHistory();
-    adjustFontSize('blueprintInput');
+    adjustFontSize(dom.blueprintInput);
 
-    document.getElementById('blueprintInput').addEventListener('input', function() {
-        adjustFontSize('blueprintInput');
-    });
-
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchInJson();
-        }
-    });
+    const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ru';
+    setLanguage(savedLanguage);
 
     decodeBlueprint();
-};
+});
