@@ -1,4 +1,4 @@
-# Factorio Blueprint Decoder Encoder
+# FCT Blueprint Decoder Encoder <a href="https://github.com/OstinUA"><img align="right" src="https://img.shields.io/badge/OstinUA-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
 
 > Decode, inspect, patch, and re-encode Factorio blueprint strings without leaving your browser.
 
