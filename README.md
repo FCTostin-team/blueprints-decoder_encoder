@@ -1,12 +1,14 @@
 # FCT Blueprint Decoder Encoder <a href="https://github.com/OstinUA"><img align="right" src="https://img.shields.io/badge/OstinUA-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
 
-> Decode, inspect, patch, and re-encode Factorio blueprint strings without leaving your browser.
+![Factorio: 2.0+](https://img.shields.io/badge/Factorio-2.0%2B%20%2F%20Space%20Age-orange?style=for-the-badge)
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v3.8-5c7cfa?style=for-the-badge)](https://github.com/FCTostin-team)
-[![Frontend](https://img.shields.io/badge/frontend-HTML%2FCSS%2FJS-orange?style=for-the-badge)](#tech-stack)
-[![Localization](https://img.shields.io/badge/i18n-12_languages-success?style=for-the-badge)](#features)
-[![Factorio](https://img.shields.io/badge/Factorio-Blueprints-ff9f1a?style=for-the-badge)](https://factorio.com/)
+![Platform: Web](https://img.shields.io/badge/Platform-Web_App-0ea5e9?style=for-the-badge)
+[![Frontend: Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111111)](script.js)
+[![Styles: CSS3](https://img.shields.io/badge/Styles-CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](style.css)
+[![Markup: HTML5](https://img.shields.io/badge/Markup-HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](index.html)
+![Status: Active](https://img.shields.io/badge/Status-Active-22c55e?style=for-the-badge)
+![Coverage: Manual](https://img.shields.io/badge/Coverage-Manual%20Validation-lightgrey?style=for-the-badge)
+[![i18n](https://img.shields.io/badge/i18n-multi--language-2ea44f?style=for-the-badge)](#features)
 
 A production-friendly web utility for working with Factorio blueprint strings (`zlib + base64`). The app gives you a full decode/edit/encode round-trip pipeline with a CodeMirror-powered JSON editing workflow, search/replace tooling, local history persistence, and multilingual UI support.
 
@@ -257,4 +259,4 @@ Project created with the support of the FCTostin community.
 
 - GitHub: [OstinUA](https://github.com/OstinUA)
 - Team page: [FCTostin-team](https://github.com/FCTostin-team)
-- Main community channels: YouTube, Telegram, Steam (links above)
+- Contribution process: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
